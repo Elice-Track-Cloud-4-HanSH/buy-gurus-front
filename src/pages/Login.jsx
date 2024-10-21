@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useUserContext } from "../context/UserContext";
 
 function Login() {
+  const { setUser } = useUserContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -26,7 +28,8 @@ function Login() {
       );
 
       if (response.ok) {
-        // const data = await response.json();
+        const data = await response.json();
+        setUser(data);
         console.log("로그인 성공:");
         window.location.href = "/home";
       } else {
