@@ -1,8 +1,13 @@
 import React, { useState, useEffect, Children } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { Modal, Button, Alert, Form } from 'react-bootstrap';
+import { Modal, Button, Alert, Form, Container, Row, Col} from 'react-bootstrap';
+import Header2 from "../../components/Header2";
+import CustomButton from "../../components/Button";
 import axios from 'axios'; // axios 추가
 import './Category.css';
+import { useNavigate } from "react-router-dom";
+
+
 
 const CategoryManagement = () => {
   const [categories, setCategories] = useState([]);
@@ -14,7 +19,7 @@ const CategoryManagement = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [isSubcategory, setIsSubcategory] = useState(false);
   const [editName, setEditName] = useState('');
-
+  const nav = useNavigate();
   // 1. 카테고리 조회
   const fetchCategories = async () => {
     try {
@@ -55,7 +60,7 @@ const CategoryManagement = () => {
       try {
         if (isSubcategory) {
           // 중분류 생성
-          const response = await axios.post('/api/category', {
+          const response = await axios.post('/api/admin/category', {
             parentId: selectedCategory, // 부모 카테고리의 ID
             name: newCategoryName.trim(), // 중분류 이름
           });
@@ -66,11 +71,12 @@ const CategoryManagement = () => {
                 children: [...cat.children, response.data], // 응답 데이터를 새로운 중분류로 추가
               };
             }
+            nav(0);
             return cat;
           }));
         } else {
           // 대분류 생성
-          const response = await axios.post('/api/FirstCategory', {
+          const response = await axios.post('/api/admin/FirstCategory', {
             id: Date.now(), // 임시로 ID 설정
             name: newCategoryName.trim(),
           });
@@ -85,6 +91,7 @@ const CategoryManagement = () => {
         }
         setNewCategoryName(''); // 생성 후 입력 필드 초기화
         setShowCreateModal(false); // 모달 닫기
+        nav(0);
       } catch (error) {
         console.error('Error creating category:', error);
       }
@@ -108,7 +115,7 @@ const CategoryManagement = () => {
         setCategories(updatedCategories);
       } else {
         // 대분류 삭제 API 요청
-        await axios.delete(`/api/category/${selectedCategory.id}`);
+        await axios.delete(`/api/admin/category/${selectedCategory.id}`);
         setCategories(categories.filter(cat => cat.id !== selectedCategory.id));
       }
       setShowDeleteModal(false);
@@ -125,13 +132,20 @@ const CategoryManagement = () => {
   };
 
   return (
+    <Container>
+    <Row className="justify-content-center">
+      <Col xs={12} md={6}>
+    <Header2 leftchild={<CustomButton text={"<<"} variant="dark" onClick={ ()=> nav(-1)} />} 
+        />
     <div className="category-container p-4">
       {/* 대분류 생성 버튼 */}
+      
       <div className="addBigCategoryButton">
-        <Button variant="dark" onClick={() => openCreateModal()}>
+        <Button variant="dark" styleonClick={() => openCreateModal()}>
           대분류 추가
         </Button>
       </div>
+      
 
       {/* 카테고리 목록 */}
       <div className="space-y-4">
@@ -209,7 +223,11 @@ const CategoryManagement = () => {
         </Modal.Footer>
       </Modal>
     </div>
+    </Col>
+  </Row>
+  </Container>
   );
+
 };
 
 export default CategoryManagement;
