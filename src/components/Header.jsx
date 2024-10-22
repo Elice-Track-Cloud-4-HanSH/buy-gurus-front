@@ -2,26 +2,27 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from "/public/Logo.PNG";
-import axiosInstance from "../utils/interceptors";
+import { useUserContext } from "../context/UserContext";
 
 const Header = () => {
   const nav = useNavigate();
-
+  const { setUser } = useUserContext();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [role, setRole] = useState("");
 
   // 로그인 조회
   useEffect(() => {
-    axiosInstance
+    axios
       .get("/api/userMe")
       .then((response) => {
+        setUser(response.data.data);
         setUserName(response.data.data.nickname);
         setRole(response.data.data.role);
         setIsLoggedIn(true);
       })
       .catch((error) => console.log(error));
-  }, []);
+  }, [setUser]);
 
   // 로그아웃 핸들러
   const handleLogout = () => {
@@ -37,6 +38,8 @@ const Header = () => {
         console.log(response.data);
         setIsLoggedIn(false);
         setUserName("");
+        setRole("");
+        setUser(null);
         nav(0);
       })
       .catch((error) => console.log(error));
@@ -78,11 +81,13 @@ const Header = () => {
                     주문내역
                   </Link>
                 </li>
-                { role === "SELLER" && <li className="nav-item">
-                  <Link to="/order?type=s" className="nav-link">
-                    판매내역
-                  </Link>
-                </li> }
+                {role === "SELLER" && (
+                  <li className="nav-item">
+                    <Link to="/order?type=s" className="nav-link">
+                      판매내역
+                    </Link>
+                  </li>
+                )}
               </ul>
               <span className="me-3">{userName}</span>
               <button className="btn btn-danger" onClick={handleLogout}>
